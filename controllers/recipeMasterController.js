@@ -1,4 +1,5 @@
-const RecipeMaster = require('../models/recipeMaster');
+const RecipeMaster = require('../models/recipeModel');
+const User = require('../models/userModel');
 
 // Lấy danh sách tất cả Recipe
 exports.getAllRecipes = async (req, res) => {
@@ -12,12 +13,21 @@ exports.getAllRecipes = async (req, res) => {
 
 // Tạo Recipe mới
 exports.createRecipe = async (req, res) => {
+  const { RecipeName, RecipeDescription, Ingredients, Author, ...otherFields } = req.body;
+
   try {
-    const recipe = new RecipeMaster(req.body);
-    const savedRecipe = await recipe.save();
-    res.status(201).json(savedRecipe);
+    const newRecipe = new RecipeMaster({
+      RecipeName,
+      RecipeDescription,
+      Ingredients,
+      Author: Author, 
+      ...otherFields,
+    });
+
+    await newRecipe.save();
+    res.status(201).json({ message: 'Công thức đã được tạo thành công', newRecipe });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(500).json({ message: 'Lỗi hệ thống', error: error.message });
   }
 };
 

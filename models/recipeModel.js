@@ -7,7 +7,7 @@ const RecipeMasterSchema = new mongoose.Schema({
   Category: { type: [String], default: [""] },
   IsSaved: { type: Boolean, default: false },
   NumOfSaved: { type: Number, default: 0 },
-  Author: { type: String },
+  Author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, 
   Ingredients: { type: [String], default: [] },
   PreparationTime: { type: Number, default: 0 },
   CookingTime: { type: Number, default: 0 },

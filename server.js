@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 
+
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
@@ -12,6 +13,7 @@ require('dotenv').config();
 
 
 const recipeRoutes = require('./routes/recipeMasterRoutes');
+const authRoutes = require('./routes/authRoutes');
 
 app.use(bodyParser.json());
 app.use(cors());
@@ -19,7 +21,9 @@ app.use(cors());
 const db = mongoose.connection;
 
 const apiKey = process.env.API_Key;
-mongoose.connect(apiKey)
+mongoose.connect(apiKey, 
+  {  useNewUrlParser: true,
+  useUnifiedTopology: true})
 
 
 db.on('error', (error) => {
@@ -32,6 +36,7 @@ db.once('open', () => {
 
 // Routes
 app.use('/api/recipes', recipeRoutes);
+app.use('/api/auth', authRoutes)
 
 
 io.on('connection', (socket) => {
