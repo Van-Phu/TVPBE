@@ -11,6 +11,27 @@ exports.getAllRecipes = async (req, res) => {
   }
 };
 
+exports.getRecipesByAuthor = async (req, res) => {
+  const { author } = req.params;  // Lấy giá trị tác giả từ URL
+  try {
+    // Tìm tất cả các công thức của tác giả
+    const recipes = await RecipeMaster.find({ Author: author });
+
+    if (recipes.length === 0) {
+      // Nếu không tìm thấy công thức nào
+      return res.status(404).json({ message: 'Không tìm thấy công thức nào của tác giả này' });
+    }
+
+    // Trả về danh sách công thức
+    res.status(200).json(recipes);
+  } catch (error) {
+    // Xử lý lỗi hệ thống
+    res.status(500).json({ message: 'Lỗi hệ thống', error: error.message });
+  }
+};
+
+
+
 // Tạo Recipe mới
 exports.createRecipe = async (req, res) => {
   const { RecipeName, RecipeDescription, Ingredients, Author, ...otherFields } = req.body;
