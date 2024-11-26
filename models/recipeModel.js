@@ -6,7 +6,7 @@ const recipeSchema = new mongoose.Schema({
   Category: [String],
   IsSaved: { type: Boolean, default: false },
   NumOfSaved: { type: Number, default: 0 },
-  Author: { type: String, default: "" },
+  Author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, 
   Ingredients: [
     {
       quantity: { type: String, required: true },
@@ -20,6 +20,7 @@ const recipeSchema = new mongoose.Schema({
   Thumnail: { type: String },
   template: { type: String },
   servings: { type: Number, default: 0 },
+  Comments: { type:[mongoose.Schema.Types.ObjectId], ref:'Comment'}
 }, { timestamps: true });
 
 const RecipeMaster = mongoose.model('RecipeMaster', recipeSchema);
