@@ -36,7 +36,7 @@ db.once('open', () => {
 
 // Routes
 app.use('/api/recipes', recipeRoutes);
-app.use('/api/auth', authRoutes)
+app.use('/api/auth', authRoutes);
 
 
 io.on('connection', (socket) => {

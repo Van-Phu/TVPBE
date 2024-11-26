@@ -14,6 +14,7 @@ const RecipeMasterSchema = new mongoose.Schema({
   Thumnail: { type: String },
   template: { type: String },
   servings: { type: Number, default: 0 },
+  Comments: { type:[mongoose.Schema.Types.ObjectId], ref:'Comment'}
 }, { timestamps: true });
 
 module.exports = mongoose.model('RecipeMaster', RecipeMasterSchema);
