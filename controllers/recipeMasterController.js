@@ -62,16 +62,33 @@ exports.createRecipe = async (req, res) => {
   }
 };
 
-// Lấy Recipe theo ID
-exports.getRecipeById = async (req, res) => {
-  try {
-    const recipe = await RecipeMaster.findById(req.params.id);
-    if (!recipe) return res.status(404).json({ message: "Recipe không tồn tại." });
-    res.status(200).json(recipe);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+  // Lấy Recipe theo ID
+  exports.getRecipeById = async (req, res) => {
+    try {
+      const recipe = await RecipeMaster.findById(req.params.id).populate('Author', "-password");
+      if (!recipe) return res.status(404).json({ message: "Recipe không tồn tại." });
+
+      const numOfPost = await RecipeMaster.countDocuments({ Author: recipe.Author._id });
+      
+      const popularRecipes = await RecipeMaster.find({Author: recipe.Author._id }).select(['_id','Thumbnail'])
+        .sort({ NumOfSaved: -1 }) // Sort by NumOfSaved in descending order
+        .limit(5); 
+
+      // // recipe['numOfPost'] = numOfPost;
+      // // recipe['popularRecipes'] = popularRecipes;
+      // recipe.Author.numOfPost = numOfPost;
+      // recipe.Author.popularRecipes = popularRecipes;
+      const recipeWithAdditionalInfo = {
+        ...recipe.toObject(), 
+        numOfPost,             
+        popularRecipes        
+      };
+
+      res.status(200).json(recipeWithAdditionalInfo);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  };
 
 // Cập nhật Recipe
 exports.updateRecipe = async (req, res) => {
