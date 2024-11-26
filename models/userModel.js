@@ -6,6 +6,7 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   fullname: { type: String},
   imagethumb: {type: String},
+  numofpost:{ type: Number}
 });
 
 // Hash mật khẩu trước khi lưu

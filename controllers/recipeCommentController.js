@@ -3,8 +3,8 @@ const RecipeComment = require('../models/commentModel');
 // Lấy danh sách tất cả Recipe
 exports.getAllComments = async (req, res) => {
   try {
-    console.log(req.params)
-    const recipes = await RecipeComment.find({Recipe: req.params});
+    const {idRecipe} = req.params
+    const recipes = await RecipeComment.find({Recipe: idRecipe}).populate('User');
     res.status(200).json(recipes);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -16,7 +16,7 @@ exports.addComment = async (req, res) => {
   const { Recipe, User, ...otherFields } = req.body;
 
   try {
-    const newRecipe = new RecipeMaster({
+    const newRecipe = new RecipeComment({
         Recipe : Recipe,
         User: User,
       ...otherFields,

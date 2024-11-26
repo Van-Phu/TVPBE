@@ -1,10 +1,20 @@
 const RecipeMaster = require('../models/recipeModel');
+const SavedRecipe = require('../models/savedRecipeModel');
 const User = require('../models/userModel');
 
 // Lấy danh sách tất cả Recipe
 exports.getAllRecipes = async (req, res) => {
   try {
     const recipes = await RecipeMaster.find();
+    res.status(200).json(recipes);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.getSavedRecipes = async (req, res) => {
+  try {
+    const recipes = await SavedRecipe.find({User: req.params.id}).populate(['User','Recipe']);
     res.status(200).json(recipes);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -107,6 +117,38 @@ exports.deleteMultipleRecipes = async (req, res) => {
       res.status(500).json({ message: error.message });
     }
   };
+
+exports.saveRecipe = async (req, res) => {
+  const { Recipe, User, ...otherFields } = req.body;
+  try {
+    const newRecipe = new SavedRecipe({
+      Recipe: Recipe,
+      User: User,
+      ...otherFields,
+    });
+
+    await newRecipe.save();
+    const recipe = await RecipeMaster.findByIdAndUpdate(Recipe._id, { $inc: { NumOfSaved: 1 } } ,{ new: true });
+    
+    res.status(201).json({ message: 'Công thức đã được lưu thành công', recipe });
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi hệ thống', error: error.message });
+  }
+};
+
+exports.unSaveRecipe = async (req, res) => {
+  try {
+    
+    const deletedRecipe = await SavedRecipe.findByIdAndDelete(req.params.id);
+    if (!deletedRecipe) return res.status(404).json({ message: "Recipe không tồn tại." });
+    const recipe = await RecipeMaster.findByIdAndUpdate(deletedRecipe.Recipe._id, { $inc: { NumOfSaved: -1 } } ,{ new: true });
+    if (!recipe) return res.status(404).json({ message: "Không tìm thấy công thức." });
+
+    res.status(201).json({ message: 'Công thức đã được lưu thành công', recipe });
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi hệ thống', error: error.message });
+  }
+};
   
 
   
