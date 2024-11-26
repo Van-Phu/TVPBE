@@ -14,7 +14,14 @@ exports.getAllRecipes = async (req, res) => {
 
 exports.getSavedRecipes = async (req, res) => {
   try {
-    const recipes = await SavedRecipe.find({User: req.params.id}).populate(['User','Recipe']);
+    // const recipes = await SavedRecipe.find({User: req.params.id}).populate('Recipe', 'Recipe');
+    const savedRecipes = await SavedRecipe.find({ User: req.params.id })
+      .populate({
+        path: 'Recipe',
+        populate: { path: 'Author', select: '-password' }
+      });
+
+    const recipes = savedRecipes.map(saved => saved.Recipe);
     res.status(200).json(recipes);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -64,13 +71,16 @@ exports.createRecipe = async (req, res) => {
 
   // Lấy Recipe theo ID
   exports.getRecipeById = async (req, res) => {
+    const {recipe, user} = req.body;
     try {
-      const recipe = await RecipeMaster.findById(req.params.id).populate('Author', "-password");
-      if (!recipe) return res.status(404).json({ message: "Recipe không tồn tại." });
 
-      const numOfPost = await RecipeMaster.countDocuments({ Author: recipe.Author._id });
+      const recipeSche = await RecipeMaster.findById(recipe).populate('Author', "-password");
+      if (!recipeSche) return res.status(404).json({ message: "Recipe không tồn tại." });
+
+      const numOfPost = await RecipeMaster.countDocuments({ Author: recipeSche.Author._id });
+      const isSaved = await SavedRecipe.findOne({ User: user, Recipe: recipe });
       
-      const popularRecipes = await RecipeMaster.find({Author: recipe.Author._id }).select(['_id','Thumbnail'])
+      const popularRecipes = await RecipeMaster.find({Author: recipeSche.Author._id }).select(['_id','Thumbnail'])
         .sort({ NumOfSaved: -1 }) // Sort by NumOfSaved in descending order
         .limit(5); 
 
@@ -79,9 +89,10 @@ exports.createRecipe = async (req, res) => {
       // recipe.Author.numOfPost = numOfPost;
       // recipe.Author.popularRecipes = popularRecipes;
       const recipeWithAdditionalInfo = {
-        ...recipe.toObject(), 
+        ...recipeSche.toObject(), 
         numOfPost,             
-        popularRecipes        
+        popularRecipes,
+        isSaved        
       };
 
       res.status(200).json(recipeWithAdditionalInfo);
@@ -139,13 +150,13 @@ exports.saveRecipe = async (req, res) => {
   const { Recipe, User, ...otherFields } = req.body;
   try {
     const newRecipe = new SavedRecipe({
-      Recipe: Recipe,
-      User: User,
-      ...otherFields,
+      Recipe: Recipe._id,
+      User: User.id,
+      ...otherFields, 
     });
 
     await newRecipe.save();
-    const recipe = await RecipeMaster.findByIdAndUpdate(Recipe._id, { $inc: { NumOfSaved: 1 } } ,{ new: true });
+    const recipe = await RecipeMaster.findByIdAndUpdate(newRecipe.Recipe, { $inc: { NumOfSaved: 1 } } ,{ new: true });
     
     res.status(201).json({ message: 'Công thức đã được lưu thành công', recipe });
   } catch (error) {
@@ -155,13 +166,14 @@ exports.saveRecipe = async (req, res) => {
 
 exports.unSaveRecipe = async (req, res) => {
   try {
+  const { Recipe, User} = req.body;
     
-    const deletedRecipe = await SavedRecipe.findByIdAndDelete(req.params.id);
+    const deletedRecipe = await SavedRecipe.findOneAndDelete({Recipe: Recipe, User: User.id});
     if (!deletedRecipe) return res.status(404).json({ message: "Recipe không tồn tại." });
     const recipe = await RecipeMaster.findByIdAndUpdate(deletedRecipe.Recipe._id, { $inc: { NumOfSaved: -1 } } ,{ new: true });
     if (!recipe) return res.status(404).json({ message: "Không tìm thấy công thức." });
 
-    res.status(201).json({ message: 'Công thức đã được lưu thành công', recipe });
+    res.status(201).json({ message: 'Huỷ lưu thành công', recipe });
   } catch (error) {
     res.status(500).json({ message: 'Lỗi hệ thống', error: error.message });
   }
