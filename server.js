@@ -14,6 +14,7 @@ require('dotenv').config();
 
 const recipeRoutes = require('./routes/recipeMasterRoutes');
 const authRoutes = require('./routes/authRoutes');
+const commentRoutes = require('./routes/commentRoutes')
 
 app.use(bodyParser.json());
 app.use(cors());
@@ -37,6 +38,8 @@ db.once('open', () => {
 // Routes
 app.use('/api/recipes', recipeRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/comments', commentRoutes);
+
 
 
 io.on('connection', (socket) => {
