@@ -4,7 +4,7 @@ const User = require('../models/userModel');
 // Lấy danh sách tất cả Recipe
 exports.getAllRecipes = async (req, res) => {
   try {
-    const recipes = await RecipeMaster.find();
+    const recipes = await RecipeMaster.find().populate('Author', "-password") ;
     res.status(200).json(recipes);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -22,7 +22,7 @@ exports.getRecipesByAuthor = async (req, res) => {
       return res.status(404).json({ message: 'Không tìm thấy người dùng với username này' });
     }
 
-    const recipes = await RecipeMaster.find({ Author: user._id }).populate('Author', 'username');
+    const recipes = await RecipeMaster.find({ Author: user._id }).populate('Author', "-password");
 
     res.status(200).json(recipes);
   } catch (error) {
