@@ -16,7 +16,14 @@ exports.login = async (req, res) => {
     //   expiresIn: '1h',
     // });
 
-    res.json({message: 'Đăng nhập thành công!', data: {username: username} });
+    res.json({
+      message: 'Đăng nhập thành công!',
+      data: {
+        username: username,
+        id: user._id
+      }
+    });
+    
   } catch (error) {
     console.error(error); // In lỗi ra console để dễ dàng kiểm tra
     res.status(500).json({ message: 'Lỗi hệ thống', error: error.message });

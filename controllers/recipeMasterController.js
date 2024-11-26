@@ -12,20 +12,20 @@ exports.getAllRecipes = async (req, res) => {
 };
 
 exports.getRecipesByAuthor = async (req, res) => {
-  const { author } = req.params;  // Lấy giá trị tác giả từ URL
-  try {
-    // Tìm tất cả các công thức của tác giả
-    const recipes = await RecipeMaster.find({ Author: author });
+  const { username } = req.params; // Lấy giá trị username từ URL
 
-    if (recipes.length === 0) {
-      // Nếu không tìm thấy công thức nào
-      return res.status(404).json({ message: 'Không tìm thấy công thức nào của tác giả này' });
+  try {
+
+    const user = await User.findOne({ username: username });
+
+    if (!user) {
+      return res.status(404).json({ message: 'Không tìm thấy người dùng với username này' });
     }
 
-    // Trả về danh sách công thức
+    const recipes = await RecipeMaster.find({ Author: user._id }).populate('Author', 'username');
+
     res.status(200).json(recipes);
   } catch (error) {
-    // Xử lý lỗi hệ thống
     res.status(500).json({ message: 'Lỗi hệ thống', error: error.message });
   }
 };
@@ -88,13 +88,12 @@ exports.deleteRecipe = async (req, res) => {
 // Xóa nhiều Recipe
 exports.deleteMultipleRecipes = async (req, res) => {
     try {
-      const { ids } = req.body; // Lấy danh sách ID từ body request
+      const { ids } = req.body;
   
       if (!Array.isArray(ids) || ids.length === 0) {
         return res.status(400).json({ message: "Danh sách IDs không hợp lệ." });
       }
-  
-      // Xóa tất cả các bản ghi có _id thuộc danh sách ids
+
       const result = await RecipeMaster.deleteMany({ _id: { $in: ids } });
   
       if (result.deletedCount === 0) {

@@ -17,7 +17,7 @@ const recipeSchema = new mongoose.Schema({
   ],
   PreparationTime: { type: Number, default: 0 },
   CookingTime: { type: Number, default: 0 },
-  Thumnail: { type: String },
+  Thumbnail: { type: String },
   template: { type: String },
   servings: { type: Number, default: 0 },
   Comments: { type:[mongoose.Schema.Types.ObjectId], ref:'Comment'}
